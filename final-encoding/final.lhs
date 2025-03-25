@@ -98,7 +98,7 @@ W przypadku kodowania początkowego, musimy uaktualnić wszystkie już napisane 
 
 Natomiast w wypadku kodowania końcowego tworzymy nową klasę:
 
-> class MultExp repr where
+> class FinExp repr => MultExp repr where
 >   mult :: repr -> repr -> repr
 
 Oraz dodajemy interpretery dla wymaganych typów reprezentacji:
@@ -108,7 +108,7 @@ Oraz dodajemy interpretery dla wymaganych typów reprezentacji:
 
 W tym momencie, cały kod korzystający jedynie z klasy `FinExp` nadal działa poprawnie, natomiast wyrażenie wykorzystujące klasę `MultExp`
 
-> multExp :: (FinExp r, MultExp r) => r
+> multExp :: MultExp r => r
 > multExp = add (mult (lit 2) (lit 3)) (lit 1)
 
 możemy zinterpretować jako `Int`:
@@ -164,6 +164,28 @@ Zastosowania
 >   beep
 >
 > runMock = print $ execState greet (ConsoleMock ["Szymon"] [])
+
+> class Lang e where
+>   num :: Int -> e Int
+>   plus :: e Int -> e Int -> e Int
+>   toString :: e Int -> e String
+>   
+>   text :: String -> e String
+>   app :: e String -> e String -> e String
+
+> newtype Value a = Value a
+>   deriving Show
+
+> instance Lang Value where
+>   num = Value
+>   plus (Value m) (Value n) = Value (m + n)
+>   toString (Value n) = Value $ show n
+>   
+>   text = Value
+>   app (Value s1) (Value s2) = Value (s1 ++ s2)
+
+> langVal :: Lang v => v String
+> langVal = app (text "Result is ") (toString (plus (num 4) (num 5)))
 
 Do poczytania
 --------------
